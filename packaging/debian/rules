@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+export CGO_ENABLED=0
+export GOFLAGS=-trimpath -buildmode=pie -mod=readonly
+export GOCACHE=$(CURDIR)/.gocache
+export GOPATH=$(CURDIR)/.gopath
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	go build -ldflags "-s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version=$(DEB_VERSION_UPSTREAM)" -o bin/highrise-code ./cmd/highrise-code
+
+override_dh_auto_test:
+	go test ./...
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/highrise-code PREFIX=/usr GO=true
+	rm -rf $(CURDIR)/debian/highrise-code/usr/share/licenses
+
+override_dh_auto_clean:
+	rm -rf bin .gocache .gopath
+
+override_dh_dwz:
+
+override_dh_strip:

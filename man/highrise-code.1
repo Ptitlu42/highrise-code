@@ -1,0 +1,113 @@
+.TH HIGHRISE-CODE 1 "2026" "highrise-code" "User Commands"
+.SH NAME
+highrise-code \- visualize a project as an interactive treemap city
+.SH SYNOPSIS
+.B highrise-code
+[\fIoptions\fR] \fIroot\fR
+.SH DESCRIPTION
+.B highrise-code
+scans a project directory and renders its architecture as an interactive city.
+Directories are districts and files are buildings.
+Footprints are proportional to file size and heights follow the selected metric.
+The view is served on the loopback interface to a local browser, or written to a single standalone HTML file.
+The scan never follows symbolic links, never leaves the project root and makes no network connection.
+.SH OPTIONS
+.TP
+.BR \-m ", " \-\-mode " " iso | 3d | 2d
+Initial view. Default: 3d.
+.TP
+.BR \-c ", " \-\-color\-by " " language | depth | size
+Building color. Default: language.
+.TP
+.BR \-H ", " \-\-height\-by " " lines | code | size | flat
+Building height metric. Default: lines.
+.TP
+.BR \-d ", " \-\-max\-depth " " \fIN\fR
+Maximum displayed depth. Deeper directories are aggregated into a single block. Hard cap: 256.
+.TP
+.BR \-i ", " \-\-ignore " " \fIGLOB\fR
+Ignore pattern using gitignore syntax. May be repeated.
+.TP
+.B \-\-include\-hidden
+Include dotfiles and hidden directories. The .git directory is always ignored.
+.TP
+.B \-\-no\-gitignore
+Do not apply .gitignore files.
+.TP
+.BI \-\-max\-files " N"
+Maximum number of scanned files. Default: 2000000.
+.TP
+.BI \-\-max\-file\-size " SIZE"
+Larger files are skipped and reported. Accepts K, M, G, T (binary) and KB, MB, GB, TB (decimal) suffixes. Default: 64MiB.
+.TP
+.BI \-\-workers " N"
+Number of scan workers. Default: number of CPUs, maximum 64.
+.TP
+.BI \-\-port " N"
+Local port. Default: a random free port.
+.TP
+.B \-\-no\-open
+Do not open the browser. The access URL is printed on standard error.
+.TP
+.BI \-\-idle\-timeout " DURATION"
+Stop the server after a period without requests. Default: disabled.
+.TP
+.BI \-\-out " FILE"
+Write a standalone HTML file and exit. Use \fB\-\fR for standard output.
+.TP
+.B \-\-stats
+Print all statistics to standard output and exit.
+.TP
+.BR \-\-format " " text | json
+Output format used by \fB\-\-stats\fR. Default: text.
+.TP
+.B \-\-strict
+Exit with status 3 if the scan produced warnings.
+.TP
+.BR \-v ", " \-\-verbose
+Verbose logs.
+.TP
+.BR \-q ", " \-\-quiet
+Only report errors.
+.TP
+.BR \-h ", " \-\-help
+Show help and exit.
+.TP
+.BR \-V ", " \-\-version
+Show version and exit.
+.SH STATISTICS
+Per file: language, bytes, total, code, comment and blank lines, total, code, comment, blank and non-whitespace characters, and average characters per line.
+Globally: totals and percentages, comment to code ratio, file, directory and byte counts, mean, median, 90th and 99th percentile and maximum of lines and characters per file, depth distribution and length distribution buckets.
+Per language: files, lines, code, comments, blanks, characters, bytes, shares of lines, characters and code, and averages per file.
+Characters are Unicode code points; an invalid byte counts as one character.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Fatal error.
+.TP
+.B 2
+Invalid usage.
+.TP
+.B 3
+Warnings were produced and \fB\-\-strict\fR was given.
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+Disable colored terminal output.
+.SH SECURITY
+The server listens on 127.0.0.1 only, validates the Host header and requires a random per-run session token delivered through the printed URL.
+Responses carry a strict Content-Security-Policy.
+.SH FILES
+None. No configuration file is read and nothing is written except the file given to \fB\-\-out\fR.
+.SH EXAMPLES
+.nf
+highrise-code .
+highrise-code \-m iso \-c depth \-d 6 ~/src/project
+highrise-code \-\-stats \-\-format json . > stats.json
+highrise-code \-\-out city.html \-i '*.min.js' .
+.fi
+.SH AUTHOR
+ptitlu

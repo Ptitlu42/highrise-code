@@ -1,0 +1,28 @@
+pkgname=highrise-code
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Interactive treemap city visualization of a project architecture'
+arch=('x86_64' 'aarch64')
+url='https://github.com/ptitlu42/highrise-code'
+license=('MIT')
+makedepends=('go')
+options=('!lto')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+  export CGO_ENABLED=0
+  export GOFLAGS="-trimpath -buildmode=pie -mod=readonly -modcacherw"
+  go build -ldflags "-s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version=$pkgver" -o "bin/$pkgname" "./cmd/$pkgname"
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  go test ./...
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make install DESTDIR="$pkgdir" PREFIX=/usr VERSION="$pkgver" GO=true
+}

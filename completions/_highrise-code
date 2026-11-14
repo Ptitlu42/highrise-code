@@ -1,0 +1,25 @@
+#compdef highrise-code
+
+_arguments -s \
+  '(-m --mode)'{-m,--mode}'[initial view]:mode:(iso 3d 2d)' \
+  '(-c --color-by)'{-c,--color-by}'[building color]:color:(language depth size)' \
+  '(-H --height-by)'{-H,--height-by}'[building height]:height:(lines code size flat)' \
+  '(-d --max-depth)'{-d,--max-depth}'[maximum displayed depth]:depth:' \
+  '*'{-i,--ignore}'[ignore pattern]:glob:' \
+  '--include-hidden[include hidden files]' \
+  '--no-gitignore[do not apply gitignore files]' \
+  '--max-files[maximum number of scanned files]:count:' \
+  '--max-file-size[skip larger files]:size:' \
+  '--workers[scan workers]:count:' \
+  '--port[local port]:port:' \
+  '--no-open[do not open the browser]' \
+  '--idle-timeout[stop the server after inactivity]:duration:' \
+  '--out[write a standalone HTML file]:file:_files' \
+  '--stats[print statistics and exit]' \
+  '--format[statistics format]:format:(text json)' \
+  '--strict[exit with code 3 on warnings]' \
+  '(-v --verbose -q --quiet)'{-v,--verbose}'[verbose logs]' \
+  '(-v --verbose -q --quiet)'{-q,--quiet}'[only report errors]' \
+  '(-h --help)'{-h,--help}'[show help]' \
+  '(-V --version)'{-V,--version}'[show version]' \
+  '1:project root:_files -/'

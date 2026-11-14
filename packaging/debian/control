@@ -1,0 +1,17 @@
+Source: highrise-code
+Section: devel
+Priority: optional
+Maintainer: ptitlu <ptitlu42@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), golang-go (>= 2:1.24~)
+Standards-Version: 4.7.0
+Homepage: https://github.com/ptitlu42/highrise-code
+Rules-Requires-Root: no
+
+Package: highrise-code
+Architecture: any
+Depends: ${misc:Depends}
+Description: interactive treemap city visualization of a project
+ highrise-code scans a project directory and renders its architecture as an
+ interactive city where directories are districts and files are buildings.
+ It reports detailed line and character statistics and can write a standalone
+ HTML file. It is a single static binary with no network access.
