@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<title>highrise-code</title>
+{{head}}
+</head>
+<body>
+<div id="app" class="app">
+  <header class="toolbar" role="toolbar" aria-label="View controls">
+    <span class="brand">highrise-code</span>
+    <div class="group" role="group" aria-label="View mode">
+      <button class="btn mode_btn" type="button" data-mode="3d" title="Perspective view (1)">3D</button>
+      <button class="btn mode_btn" type="button" data-mode="iso" title="Isometric view (2)">Iso</button>
+      <button class="btn mode_btn" type="button" data-mode="2d" title="Top-down treemap (3)">2D</button>
+    </div>
+    <label class="field"><span>Color</span>
+      <select id="color_by">
+        <option value="language">Language</option>
+        <option value="depth">Depth</option>
+        <option value="size">Size</option>
+      </select>
+    </label>
+    <label class="field"><span>Height</span>
+      <select id="height_by">
+        <option value="lines">Lines</option>
+        <option value="code">Code lines</option>
+        <option value="size">Size</option>
+        <option value="flat">Flat</option>
+      </select>
+    </label>
+    <label class="field"><span>Depth</span>
+      <input id="max_depth" type="number" min="1" max="256" step="1" inputmode="numeric">
+    </label>
+    <input id="search" class="search" type="search" placeholder="Search (/)" autocomplete="off" spellcheck="false" aria-label="Search files and directories" maxlength="256">
+    <button id="reset_view" class="btn" type="button" title="Reset view (R)">Reset</button>
+    <button id="toggle_panel" class="btn" type="button" aria-expanded="true" title="Toggle statistics panel (P)">Stats</button>
+  </header>
+  <main class="stage">
+    <canvas id="view" class="view" tabindex="0" aria-label="Interactive city view of the project"></canvas>
+    <canvas id="labels" class="labels" aria-hidden="true"></canvas>
+    <div id="tooltip" class="tooltip hidden" role="status"></div>
+    <div id="search_results" class="search_results hidden" role="listbox" aria-label="Search results"></div>
+    <div id="legend" class="legend"></div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <div id="message" class="message hidden" role="alert"></div>
+  </main>
+  <aside id="panel" class="panel" aria-label="Statistics"></aside>
+</div>
+{{boot}}
+</body>
+</html>
