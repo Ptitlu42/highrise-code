@@ -228,6 +228,13 @@ export function project(camera, x, y, z, out) {
   const inv = 1 / clip[3];
   out[0] = (clip[0] * inv * 0.5 + 0.5) * camera.width;
   out[1] = (1 - (clip[1] * inv * 0.5 + 0.5)) * camera.height;
-  out[2] = 1;
+  out[2] = clip[3];
   return true;
+}
+
+export function pixels_per_unit(camera, view_depth) {
+  if (is_orthographic(camera)) {
+    return camera.height / (2 * camera.dist * tan_half_fov);
+  }
+  return camera.height / (2 * tan_half_fov * Math.max(view_depth, 1e-6));
 }

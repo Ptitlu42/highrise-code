@@ -34,6 +34,31 @@ export function slab_thickness(world, mode) {
   return mode === "2d" ? 0 : world * slab_ratio;
 }
 
+export function node_top(layout, id, mode, height_by) {
+  const slab = slab_thickness(layout.world, mode);
+  const base = layout.depth[id] * slab;
+  if (layout.kind[id] === 0) {
+    return base + slab;
+  }
+  if (mode === "2d") {
+    return base;
+  }
+  let t = 0.12;
+  if (height_by !== "flat") {
+    let value = layout.lines[id];
+    let vmax = layout.max_lines;
+    if (height_by === "code") {
+      value = layout.code[id];
+      vmax = layout.max_code;
+    } else if (height_by === "size") {
+      value = layout.bytes[id];
+      vmax = layout.max_bytes;
+    }
+    t = Math.sqrt(Math.min(1, Math.max(0, value / Math.max(vmax, 1))));
+  }
+  return base + slab * 0.5 + t * layout.world * height_ratio;
+}
+
 export function create_renderer(canvas, sources, palette) {
   const gl = create_context(canvas);
   const building = create_program(gl, sources.vertex, sources.fragment, "building");

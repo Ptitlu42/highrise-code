@@ -72,7 +72,6 @@ export function parse_layout(buffer) {
   let max_lines = 1;
   let max_code = 1;
   let max_bytes = 1;
-  let dir_count = 0;
   for (let i = 0; i < count; i++) {
     const j = i * 4;
     rect[j] = x[i];
@@ -90,7 +89,6 @@ export function parse_layout(buffer) {
       if (code[i] > max_code) max_code = code[i];
       if (bytes_col[i] > max_bytes) max_bytes = bytes_col[i];
     }
-    if (kind[i] !== kind_file) dir_count++;
   }
   return {
     count,
@@ -101,9 +99,7 @@ export function parse_layout(buffer) {
     parent, lang, depth, kind,
     rect, values, cls,
     max_lines, max_code, max_bytes,
-    dir_count,
-    dir_ids: null,
-    dir_names: null,
+    names: null,
   };
 }
 
@@ -127,26 +123,12 @@ async function names_standalone() {
   return standalone_names;
 }
 
-export async function load_dir_names(layout, max_depth) {
+export async function load_names(layout, max_depth) {
   if (is_standalone()) {
-    const names = await names_standalone();
-    const ids = new Int32Array(layout.dir_count);
-    const out = new Array(layout.dir_count);
-    let n = 0;
-    for (let i = 0; i < layout.count; i++) {
-      if (layout.kind[i] !== kind_file) {
-        ids[n] = i;
-        out[n] = names[i];
-        n++;
-      }
-    }
-    layout.dir_ids = ids;
-    layout.dir_names = out;
+    layout.names = await names_standalone();
     return;
   }
-  const data = await fetch_json("/api/dirs?max_depth=" + max_depth);
-  layout.dir_ids = Int32Array.from(data.ids);
-  layout.dir_names = data.names;
+  layout.names = await fetch_json("/api/names?max_depth=" + max_depth);
 }
 
 function path_of(layout, names, id) {

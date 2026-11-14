@@ -115,13 +115,3 @@ func (l *Layout) Encode(w io.Writer) error {
 	}
 	return bw.Flush()
 }
-
-func (l *Layout) Dir_ids() []int32 {
-	var ids []int32
-	for i := range l.Items {
-		if l.Items[i].Kind != File_kind {
-			ids = append(ids, int32(i))
-		}
-	}
-	return ids
-}

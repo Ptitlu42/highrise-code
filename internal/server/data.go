@@ -93,15 +93,10 @@ type search_hit struct {
 	Kind string `json:"kind"`
 }
 
-type dir_names struct {
-	Ids   []int32  `json:"ids"`
-	Names []string `json:"names"`
-}
-
 type cached_layout struct {
-	lay      *layout.Layout
-	encoded  []byte
-	dir_json []byte
+	lay        *layout.Layout
+	encoded    []byte
+	names_json []byte
 }
 
 type store struct {
@@ -138,16 +133,15 @@ func (s *store) layout_for(depth int) (*cached_layout, error) {
 	if err := lay.Encode(&buf); err != nil {
 		return nil, err
 	}
-	names := dir_names{Ids: []int32{}, Names: []string{}}
-	for _, id := range lay.Dir_ids() {
-		names.Ids = append(names.Ids, id)
-		names.Names = append(names.Names, lay.Name(int(id)))
+	names := make([]string, len(lay.Items))
+	for i := range lay.Items {
+		names[i] = lay.Name(i)
 	}
-	dj, err := json.Marshal(names)
+	nj, err := json.Marshal(names)
 	if err != nil {
 		return nil, err
 	}
-	c := &cached_layout{lay: lay, encoded: buf.b, dir_json: dj}
+	c := &cached_layout{lay: lay, encoded: buf.b, names_json: nj}
 	if len(s.order) >= max_cached_layouts {
 		delete(s.layouts, s.order[0])
 		s.order = s.order[1:]

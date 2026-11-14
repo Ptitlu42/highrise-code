@@ -9,7 +9,7 @@ import {
 } from "hr/camera";
 import {
   kind_file,
-  load_dir_names,
+  load_names,
   load_layout,
   load_node,
   load_summary,
@@ -21,7 +21,7 @@ import { attach_input } from "hr/input";
 import { create_labels } from "hr/labels";
 import { build_palette } from "hr/palette";
 import { build_panel, render_selection } from "hr/panel";
-import { create_renderer, slab_thickness } from "hr/renderer";
+import { create_renderer } from "hr/renderer";
 import { request_render, set_frame_callback, state } from "hr/state";
 
 const max_dpr = 2;
@@ -88,7 +88,7 @@ function frame(now) {
   if (state.renderer && state.layout) {
     state.renderer.draw(state);
     if (state.labels) {
-      state.labels.draw(state.camera, state.layout, slab_thickness(state.layout.world, state.camera.mode), state.show_labels);
+      state.labels.draw(state);
     }
   }
   if (animating) {
@@ -309,7 +309,7 @@ async function apply_depth(depth, reset_view_after) {
     state.selected = -1;
     state.hovered = -1;
     state.renderer.set_layout(layout);
-    await load_dir_names(layout, depth);
+    await load_names(layout, depth);
     if (reset_view_after) {
       reset_camera(state.camera, layout.world, state.mode);
     }

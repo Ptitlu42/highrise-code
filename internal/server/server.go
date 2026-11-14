@@ -122,7 +122,7 @@ func (a *App) Handler() http.Handler {
 	mux.HandleFunc("GET /{$}", a.handle_index)
 	mux.HandleFunc("GET /api/summary", a.handle_summary)
 	mux.HandleFunc("GET /api/layout", a.handle_layout)
-	mux.HandleFunc("GET /api/dirs", a.handle_dirs)
+	mux.HandleFunc("GET /api/names", a.handle_names)
 	mux.HandleFunc("GET /api/node", a.handle_node)
 	mux.HandleFunc("GET /api/search", a.handle_search)
 	mux.HandleFunc("GET /css/", a.handle_static)
@@ -196,14 +196,14 @@ func (a *App) handle_layout(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(c.encoded)
 }
 
-func (a *App) handle_dirs(w http.ResponseWriter, r *http.Request) {
+func (a *App) handle_names(w http.ResponseWriter, r *http.Request) {
 	c, err := a.store.layout_for(depth_param(r))
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	_, _ = w.Write(c.dir_json)
+	_, _ = w.Write(c.names_json)
 }
 
 func (a *App) handle_node(w http.ResponseWriter, r *http.Request) {
