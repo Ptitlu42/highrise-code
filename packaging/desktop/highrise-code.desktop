@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=highrise-code
+GenericName=Code city viewer
+Comment=Visualize a project as an interactive treemap city
+Exec=highrise-code --pick
+Icon=highrise-code
+Terminal=true
+Categories=Development;
+Keywords=code;treemap;statistics;architecture;

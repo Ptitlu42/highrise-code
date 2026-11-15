@@ -8,6 +8,8 @@ BASH_DIR := $(PREFIX)/share/bash-completion/completions
 ZSH_DIR := $(PREFIX)/share/zsh/site-functions
 FISH_DIR := $(PREFIX)/share/fish/vendor_completions.d
 LICENSE_DIR := $(PREFIX)/share/licenses/$(NAME)
+APPS_DIR := $(PREFIX)/share/applications
+ICON_DIR := $(PREFIX)/share/icons/hicolor/scalable/apps
 GO ?= go
 GOFLAGS_BUILD := -trimpath -buildmode=pie -mod=readonly
 LDFLAGS := -s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version=$(VERSION)
@@ -36,6 +38,8 @@ install: build
 	install -Dm644 completions/$(NAME).bash $(DESTDIR)$(BASH_DIR)/$(NAME)
 	install -Dm644 completions/_$(NAME) $(DESTDIR)$(ZSH_DIR)/_$(NAME)
 	install -Dm644 completions/$(NAME).fish $(DESTDIR)$(FISH_DIR)/$(NAME).fish
+	install -Dm644 packaging/desktop/$(NAME).desktop $(DESTDIR)$(APPS_DIR)/$(NAME).desktop
+	install -Dm644 packaging/desktop/$(NAME).svg $(DESTDIR)$(ICON_DIR)/$(NAME).svg
 	install -Dm644 LICENSE $(DESTDIR)$(LICENSE_DIR)/LICENSE
 
 uninstall:
@@ -44,6 +48,8 @@ uninstall:
 	rm -f $(DESTDIR)$(BASH_DIR)/$(NAME)
 	rm -f $(DESTDIR)$(ZSH_DIR)/_$(NAME)
 	rm -f $(DESTDIR)$(FISH_DIR)/$(NAME).fish
+	rm -f $(DESTDIR)$(APPS_DIR)/$(NAME).desktop
+	rm -f $(DESTDIR)$(ICON_DIR)/$(NAME).svg
 	rm -rf $(DESTDIR)$(LICENSE_DIR)
 
 clean:

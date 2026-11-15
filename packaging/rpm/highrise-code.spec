@@ -38,6 +38,8 @@ make install DESTDIR=%{buildroot} PREFIX=%{_prefix} VERSION=%{version} GO=true
 %{_datadir}/bash-completion/completions/%{name}
 %{_datadir}/zsh/site-functions/_%{name}
 %{_datadir}/fish/vendor_completions.d/%{name}.fish
+%{_datadir}/applications/%{name}.desktop
+%{_datadir}/icons/hicolor/scalable/apps/%{name}.svg
 
 %changelog
 * Sat Nov 14 2026 ptitlu <ptitlu42@users.noreply.github.com> - 0.1.0-1
