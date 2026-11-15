@@ -332,6 +332,32 @@ Notes:
 
 </details>
 
+## How the rendering works
+
+The three views share one WebGL2 engine. Only the camera and a few parameters change between them.
+
+**Shared engine**
+
+- One cube geometry is uploaded once (`web/js/gl.js`). Every file, directory and aggregated block is an instance of that cube, and the whole city is drawn with a single `drawArraysInstanced` call.
+- Three per-instance buffers drive it: the footprint (`x`, `z`, width, depth) computed by the squarified treemap in `internal/layout`; the metrics (lines, code, bytes, depth); and the class (language and kind).
+- The vertex shader (`web/shaders/building.vert.glsl`) turns the unit cube into a building. Directories are thin slabs stacked by depth. Files rise by `slab / 2 + sqrt(value / max) * max_height`, where the value depends on the Height setting.
+- Colors come from a palette texture (language), a color ramp (depth, size) or a neutral tone (directories). The fragment shader applies a simple Lambert lighting.
+- Picking redraws the scene off screen with every instance encoded as a color, then reads the single pixel under the pointer.
+- Labels are a 2D canvas on top, projected with the same matrix as the 3D scene.
+
+**What differs per view** (`web/js/camera.js`, `web/js/renderer.js`)
+
+| | 3D | Iso | 2D |
+| --- | --- | --- | --- |
+| Projection | Perspective | Orthographic | Orthographic |
+| Camera angle | Orbit, yaw 0.65, pitch 0.72 | 45 degrees, about 35.3 degrees (true isometric) | Straight down |
+| Building height | Yes | Yes | No, slabs and heights forced to 0 |
+| Depth test and culling | Yes | Yes | No |
+| Lighting | Lambert | Lambert | Flat |
+| Left drag | Orbit | Pan | Pan |
+
+Switching view only replaces the camera angle and recomputes the matrices. No geometry is reloaded.
+
 ## Security
 
 - The scanner is confined to the project root with `os.OpenRoot`. Symbolic links are never followed, only regular files are read, and files are checked before and after opening.
