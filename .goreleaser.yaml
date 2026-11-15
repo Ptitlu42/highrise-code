@@ -15,7 +15,7 @@ builds:
       - CGO_ENABLED=0
     goos: [linux]
     goarch: [amd64, arm64]
-    flags: [-trimpath, -buildmode=pie, -mod=readonly]
+    flags: [-trimpath, -mod=readonly]
     ldflags:
       - -s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version={{.Version}}
   - id: macos

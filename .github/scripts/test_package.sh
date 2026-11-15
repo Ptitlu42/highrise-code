@@ -31,16 +31,27 @@ pick_file() {
   echo "$1"
 }
 
+installed_files() {
+  case "$1" in
+    deb) dpkg -L highrise-code ;;
+    rpm) rpm -ql highrise-code ;;
+    apk) apk info -L highrise-code ;;
+    pacman) pacman -Ql highrise-code | cut -d' ' -f2 ;;
+  esac
+}
+
 check_installed_files() {
   command -v highrise-code >/dev/null 2>&1 || { echo "highrise-code is not in PATH" >&2; exit 1; }
+  listing="$(installed_files "$1")"
   for f in \
+    /usr/bin/highrise-code \
     /usr/share/man/man1/highrise-code.1.gz \
     /usr/share/bash-completion/completions/highrise-code \
     /usr/share/zsh/site-functions/_highrise-code \
     /usr/share/fish/vendor_completions.d/highrise-code.fish \
     /usr/share/applications/highrise-code.desktop \
     /usr/share/icons/hicolor/scalable/apps/highrise-code.svg; do
-    [ -f "$f" ] || { echo "missing installed file: $f" >&2; exit 1; }
+    echo "$listing" | grep -qx "$f" || { echo "package does not contain: $f" >&2; echo "$listing" >&2; exit 1; }
   done
 }
 
@@ -49,7 +60,7 @@ ensure_curl
 case "$format" in
   deb)
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$(pick_file deb)"
-    check_installed_files
+    check_installed_files "$format"
     binary="highrise-code"
     ;;
   rpm)
@@ -59,17 +70,17 @@ case "$format" in
     else
       zypper --non-interactive --no-gpg-checks install --allow-unsigned-rpm "$file"
     fi
-    check_installed_files
+    check_installed_files "$format"
     binary="highrise-code"
     ;;
   apk)
     apk add --no-cache --allow-untrusted "$(pick_file apk)"
-    check_installed_files
+    check_installed_files "$format"
     binary="highrise-code"
     ;;
   pacman)
     pacman -U --noconfirm "$(pick_file pkg.tar.zst)"
-    check_installed_files
+    check_installed_files "$format"
     binary="highrise-code"
     ;;
   tar)
