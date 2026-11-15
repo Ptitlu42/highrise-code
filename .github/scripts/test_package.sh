@@ -35,7 +35,7 @@ installed_files() {
   case "$1" in
     deb) dpkg -L highrise-code ;;
     rpm) rpm -ql highrise-code ;;
-    apk) apk info -L highrise-code ;;
+    apk) apk info -L highrise-code | grep '^[^ ]*/' | sed 's#^/*#/#' ;;
     pacman) pacman -Ql highrise-code | cut -d' ' -f2 ;;
   esac
 }
