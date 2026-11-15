@@ -28,16 +28,27 @@ const (
 )
 
 type Env struct {
-	Stdout io.Writer
-	Stderr io.Writer
-	Getenv func(string) string
+	Stdout    io.Writer
+	Stderr    io.Writer
+	Getenv    func(string) string
+	Pick      func(context.Context) (string, error)
+	Auto_pick bool
 }
 
 func Default_env() Env {
-	return Env{Stdout: os.Stdout, Stderr: os.Stderr, Getenv: os.Getenv}
+	return Env{
+		Stdout:    os.Stdout,
+		Stderr:    os.Stderr,
+		Getenv:    os.Getenv,
+		Pick:      pick_folder,
+		Auto_pick: launched_from_gui(os.Getenv),
+	}
 }
 
 func Run(ctx context.Context, args []string, env Env) int {
+	if len(args) == 0 && env.Auto_pick {
+		args = []string{"--pick"}
+	}
 	opts, err := Parse_args(args)
 	log := &logger{w: env.Stderr, level: level_normal, color: color_enabled(env.Stderr, env.Getenv)}
 	if err != nil {
@@ -61,6 +72,22 @@ func Run(ctx context.Context, args []string, env Env) int {
 	}
 	for _, n := range opts.Notes {
 		log.debugf("%s", n)
+	}
+	if opts.Pick {
+		if env.Pick == nil {
+			log.errorf("%s", Err_no_picker)
+			return exit_fatal
+		}
+		root, err := env.Pick(ctx)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				log.errorf("interrupted")
+			} else {
+				log.errorf("%s", Sanitize(err.Error()))
+			}
+			return exit_fatal
+		}
+		opts.Root = root
 	}
 
 	res, err := run_scan(ctx, opts, log)

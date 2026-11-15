@@ -28,7 +28,7 @@ _highrise_code() {
             ;;
     esac
     if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "-m --mode -c --color-by -H --height-by -d --max-depth -i --ignore --include-hidden --no-gitignore --max-files --max-file-size --workers --port --no-open --idle-timeout --out --stats --format --strict -v --verbose -q --quiet -h --help -V --version" -- "$cur"))
+        COMPREPLY=($(compgen -W "-m --mode -c --color-by -H --height-by -d --max-depth -i --ignore --include-hidden --no-gitignore --max-files --max-file-size --workers --port --no-open --pick --idle-timeout --out --stats --format --strict -v --verbose -q --quiet -h --help -V --version" -- "$cur"))
         return
     fi
     COMPREPLY=($(compgen -d -- "$cur"))

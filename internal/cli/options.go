@@ -24,6 +24,7 @@ type Options struct {
 	Workers        int
 	Port           int
 	No_open        bool
+	Pick           bool
 	Idle_timeout   time.Duration
 	Out            string
 	Stats          bool
@@ -147,6 +148,7 @@ func flag_specs() []flag_spec {
 			return nil
 		}},
 		{0, "no-open", false, func(o *Options, _ string) error { o.No_open = true; return nil }},
+		{0, "pick", false, func(o *Options, _ string) error { o.Pick = true; return nil }},
 		{0, "idle-timeout", true, func(o *Options, v string) error {
 			d, err := time.ParseDuration(v)
 			if err != nil || d < 0 {
@@ -267,8 +269,13 @@ func Parse_args(args []string) (Options, error) {
 	}
 	switch len(positional) {
 	case 0:
-		return opts, usage_errorf("missing project root")
+		if !opts.Pick {
+			return opts, usage_errorf("missing project root")
+		}
 	case 1:
+		if opts.Pick {
+			return opts, usage_errorf("--pick cannot be combined with a project root")
+		}
 		opts.Root = positional[0]
 	default:
 		return opts, usage_errorf("too many arguments: expected a single project root")

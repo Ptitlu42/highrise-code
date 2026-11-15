@@ -1,6 +1,7 @@
 package cli
 
 const usage_text = `Usage: highrise-code [options] <root>
+       highrise-code --pick [options]
 
 Visualize a project as an interactive treemap city: files are buildings,
 directories are districts.
@@ -20,6 +21,7 @@ Options:
       --workers N               scan workers (default number of CPUs, max 64)
       --port N                  local port (default: random free port)
       --no-open                 do not open the browser
+      --pick                    choose the project folder in a small dialog
       --idle-timeout DURATION   stop the server after inactivity (default 0, disabled)
       --out FILE                write a standalone HTML file and exit ("-" for stdout)
       --stats                   print all statistics to the terminal and exit
@@ -32,6 +34,9 @@ Options:
 
 Exit codes:
   0 success, 1 fatal error, 2 invalid usage, 3 warnings with --strict
+
+Started without arguments from a file manager (double click), the folder dialog
+opens automatically.
 
 Environment:
   NO_COLOR                      disable colored terminal output

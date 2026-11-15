@@ -4,6 +4,9 @@ highrise-code \- visualize a project as an interactive treemap city
 .SH SYNOPSIS
 .B highrise-code
 [\fIoptions\fR] \fIroot\fR
+.br
+.B highrise-code \-\-pick
+[\fIoptions\fR]
 .SH DESCRIPTION
 .B highrise-code
 scans a project directory and renders its architecture as an interactive city.
@@ -48,6 +51,9 @@ Local port. Default: a random free port.
 .TP
 .B \-\-no\-open
 Do not open the browser. The access URL is printed on standard error.
+.TP
+.B \-\-pick
+Choose the project folder in a small native dialog (zenity, kdialog or yad on Linux, osascript on macOS, a Windows folder dialog on Windows). This is also the default when the program is started without arguments from a file manager.
 .TP
 .BI \-\-idle\-timeout " DURATION"
 Stop the server after a period without requests. Default: disabled.
