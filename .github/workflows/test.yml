@@ -1,0 +1,197 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  go_tests:
+    name: go tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - run: go vet ./...
+
+      - name: Test
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            go test -race ./...
+          else
+            go test ./...
+          fi
+
+  build_packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --snapshot --clean --skip=publish
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  linux_packages:
+    name: ${{ matrix.target }} (${{ matrix.arch }})
+    needs: build_packages
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        target:
+          - debian_stable
+          - debian_oldstable
+          - debian_tarball
+          - ubuntu_22_04
+          - ubuntu_24_04
+          - ubuntu_latest
+          - fedora_latest
+          - almalinux_9
+          - opensuse_tumbleweed
+          - alpine_apk
+          - alpine_tarball
+          - archlinux
+        include:
+          - { target: debian_stable, image: "debian:stable", format: deb }
+          - { target: debian_oldstable, image: "debian:oldstable", format: deb }
+          - { target: debian_tarball, image: "debian:stable", format: tar }
+          - { target: ubuntu_22_04, image: "ubuntu:22.04", format: deb }
+          - { target: ubuntu_24_04, image: "ubuntu:24.04", format: deb }
+          - { target: ubuntu_latest, image: "ubuntu:latest", format: deb }
+          - { target: fedora_latest, image: "fedora:latest", format: rpm }
+          - { target: almalinux_9, image: "almalinux:9", format: rpm }
+          - { target: opensuse_tumbleweed, image: "opensuse/tumbleweed", format: rpm }
+          - { target: alpine_apk, image: "alpine:latest", format: apk }
+          - { target: alpine_tarball, image: "alpine:latest", format: tar }
+          - { target: archlinux, image: "archlinux:latest", format: pacman }
+        exclude:
+          - { arch: arm64, target: archlinux }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Install and smoke test
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work "${{ matrix.image }}" \
+            sh /work/.github/scripts/test_package.sh "${{ matrix.format }}" /work/dist "${{ matrix.arch }}" /work/internal
+
+  linux_picker:
+    needs: build_packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Install display tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb xdotool zenity
+
+      - name: Folder dialog
+        run: |
+          chmod +x dist/linux_linux_amd64_v1/highrise-code
+          .github/scripts/test_picker_linux.sh "$PWD/dist/linux_linux_amd64_v1/highrise-code"
+
+  windows:
+    name: windows ${{ matrix.arch }}
+    needs: build_packages
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-latest, arch: amd64, dir: windows_windows_amd64_v1 }
+          - { runner: windows-11-arm, arch: arm64, dir: windows_windows_arm64_v8.0 }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Smoke test the exe
+        shell: bash
+        run: sh .github/scripts/smoke_test.sh "dist/${{ matrix.dir }}/highrise-code.exe" internal
+
+      - name: Unpack the zip
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem dist -Filter "highrise-code_*_windows_${{ matrix.arch }}.zip" | Select-Object -First 1
+          Expand-Archive -Path $zip.FullName -DestinationPath unzipped
+
+      - name: Smoke test the zip
+        shell: bash
+        run: sh .github/scripts/smoke_test.sh unzipped/highrise-code.exe internal
+
+      - name: Folder dialog is available
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms
+          $owner = New-Object System.Windows.Forms.Form
+          $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+          $dialog.Description = 'check'
+          Write-Output 'FolderBrowserDialog can be created'
+
+  macos:
+    name: macos ${{ matrix.arch }}
+    needs: build_packages
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-latest, arch: arm64 }
+          - { runner: macos-15-intel, arch: amd64 }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Smoke test the archive
+        run: |
+          mkdir unpacked
+          tar -xzf dist/highrise-code_*_darwin_${{ matrix.arch }}.tar.gz -C unpacked
+          sh .github/scripts/smoke_test.sh unpacked/highrise-code internal
+
+      - name: Folder dialog is available
+        run: osascript -e 'return 1'

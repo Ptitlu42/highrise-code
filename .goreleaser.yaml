@@ -1,0 +1,164 @@
+version: 2
+
+project_name: highrise-code
+
+before:
+  hooks:
+    - go mod verify
+    - sh -c 'mkdir -p build/man && gzip -9nc man/highrise-code.1 > build/man/highrise-code.1.gz'
+
+builds:
+  - id: linux
+    main: ./cmd/highrise-code
+    binary: highrise-code
+    env:
+      - CGO_ENABLED=0
+    goos: [linux]
+    goarch: [amd64, arm64]
+    flags: [-trimpath, -buildmode=pie, -mod=readonly]
+    ldflags:
+      - -s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version={{.Version}}
+  - id: macos
+    main: ./cmd/highrise-code
+    binary: highrise-code
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath, -mod=readonly]
+    ldflags:
+      - -s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version={{.Version}}
+  - id: windows
+    main: ./cmd/highrise-code
+    binary: highrise-code
+    env:
+      - CGO_ENABLED=0
+    goos: [windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath, -mod=readonly]
+    ldflags:
+      - -s -w -X github.com/ptitlu42/highrise-code/internal/cli.Version={{.Version}}
+
+archives:
+  - id: unix
+    ids: [linux, macos]
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files: &archive_files
+      - LICENSE
+      - README.md
+      - src: man/highrise-code.1
+        dst: man/highrise-code.1
+      - src: completions/*
+        dst: completions
+  - id: windows_zip
+    ids: [windows]
+    formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files: *archive_files
+  - id: windows_exe
+    ids: [windows]
+    formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - id: packages
+    package_name: highrise-code
+    ids: [linux]
+    formats: [deb, rpm, apk, archlinux]
+    vendor: ptitlu
+    maintainer: ptitlu <ptitlu42@users.noreply.github.com>
+    homepage: https://github.com/ptitlu42/highrise-code
+    license: MIT
+    section: devel
+    priority: optional
+    description: |-
+      Interactive treemap city visualization of a project.
+      Scans a project directory and renders its architecture as an interactive
+      city where directories are districts and files are buildings.
+    bindir: /usr/bin
+    file_name_template: "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    contents:
+      - src: build/man/highrise-code.1.gz
+        dst: /usr/share/man/man1/highrise-code.1.gz
+        file_info:
+          mode: 0644
+      - src: completions/highrise-code.bash
+        dst: /usr/share/bash-completion/completions/highrise-code
+        file_info:
+          mode: 0644
+      - src: completions/_highrise-code
+        dst: /usr/share/zsh/site-functions/_highrise-code
+        file_info:
+          mode: 0644
+      - src: completions/highrise-code.fish
+        dst: /usr/share/fish/vendor_completions.d/highrise-code.fish
+        file_info:
+          mode: 0644
+      - src: packaging/desktop/highrise-code.desktop
+        dst: /usr/share/applications/highrise-code.desktop
+        file_info:
+          mode: 0644
+      - src: packaging/desktop/highrise-code.svg
+        dst: /usr/share/icons/hicolor/scalable/apps/highrise-code.svg
+        file_info:
+          mode: 0644
+      - src: packaging/debian/copyright
+        dst: /usr/share/doc/highrise-code/copyright
+        packager: deb
+        file_info:
+          mode: 0644
+      - src: LICENSE
+        dst: /usr/share/licenses/highrise-code/LICENSE
+        packager: rpm
+        file_info:
+          mode: 0644
+      - src: LICENSE
+        dst: /usr/share/licenses/highrise-code/LICENSE
+        packager: archlinux
+        file_info:
+          mode: 0644
+      - src: LICENSE
+        dst: /usr/share/licenses/highrise-code/LICENSE
+        packager: apk
+        file_info:
+          mode: 0644
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs"
+      - "^ci"
+      - "^chore"
+      - "^test"
+
+release:
+  github:
+    owner: ptitlu42
+    name: highrise-code
+  header: |
+    ## Install
+
+    **Debian / Ubuntu**
+    ```sh
+    sudo apt install ./highrise-code_{{ .Version }}_linux_amd64.deb
+    ```
+
+    **Fedora / RHEL**
+    ```sh
+    sudo dnf install ./highrise-code_{{ .Version }}_linux_amd64.rpm
+    ```
+
+    **Windows**
+    Download `highrise-code_{{ .Version }}_windows_amd64.exe` (or the `.zip`) and run it from a terminal: `highrise-code.exe .`
+
+    **Arch Linux**
+    ```sh
+    sudo pacman -U ./highrise-code_{{ .Version }}_linux_amd64.pkg.tar.zst
+    ```
+
+    Replace `amd64` with `arm64` on ARM machines. Checksums are in `checksums.txt`.

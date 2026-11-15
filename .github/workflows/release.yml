@@ -1,0 +1,65 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  aur:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      HAS_AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check AUR credentials
+        if: env.HAS_AUR_KEY != 'true'
+        run: echo "::notice::AUR_SSH_PRIVATE_KEY is not set, skipping AUR publication"
+
+      - name: Set package version
+        if: env.HAS_AUR_KEY == 'true'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          sed -i "s/^pkgver=.*/pkgver=${version}/; s/^pkgrel=.*/pkgrel=1/" packaging/arch/PKGBUILD
+
+      - name: Publish to the AUR
+        if: env.HAS_AUR_KEY == 'true'
+        uses: KSXGitHub/github-actions-deploy-aur@v4.2.0
+        with:
+          pkgname: highrise-code
+          pkgbuild: packaging/arch/PKGBUILD
+          commit_username: ptitlu
+          commit_email: ptitlu42@users.noreply.github.com
+          commit_message: Update to ${{ github.ref_name }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          updpkgsums: true
+          test: true
