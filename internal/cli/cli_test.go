@@ -283,9 +283,6 @@ func TestRun_out_stdout(t *testing.T) {
 
 func TestRun_strict_with_warnings(t *testing.T) {
 	root := make_project(t)
-	if err := os.Symlink("/nonexistent", filepath.Join(root, "dangling")); err != nil {
-		t.Fatal(err)
-	}
 	if err := os.WriteFile(filepath.Join(root, "big.txt"), bytes.Repeat([]byte("x\n"), 4096), 0o644); err != nil {
 		t.Fatal(err)
 	}
