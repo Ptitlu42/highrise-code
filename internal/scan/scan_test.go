@@ -289,14 +289,20 @@ func Test_depth_limit(t *testing.T) {
 func Test_hostile_names(t *testing.T) {
 	root := t.TempDir()
 	names := []string{"new\nline.go", "esc\x1b[31m.go", "bad\xff\xfe.go", "tab\there.go"}
+	created := 0
 	for _, n := range names {
 		if err := os.WriteFile(filepath.Join(root, n), []byte("x\n"), 0o644); err != nil {
-			t.Fatal(err)
+			t.Logf("filesystem rejects %q: %v", n, err)
+			continue
 		}
+		created++
+	}
+	if created == 0 {
+		t.Skip("filesystem rejects every hostile name")
 	}
 	res := scan_root(t, root, nil)
-	if res.Root.Files_total != int64(len(names)) {
-		t.Errorf("files_total=%d", res.Root.Files_total)
+	if res.Root.Files_total != int64(created) {
+		t.Errorf("files_total=%d want %d", res.Root.Files_total, created)
 	}
 }
 

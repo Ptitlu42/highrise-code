@@ -135,10 +135,16 @@ func Test_empty_report_json(t *testing.T) {
 
 func Test_json_with_hostile_names(t *testing.T) {
 	root := t.TempDir()
+	created := 0
 	for _, n := range []string{"a\nb.go", "esc\x1b[0m.go", "bad\xff.go"} {
 		if err := os.WriteFile(filepath.Join(root, n), []byte("x\n"), 0o644); err != nil {
-			t.Fatal(err)
+			t.Logf("filesystem rejects %q: %v", n, err)
+			continue
 		}
+		created++
+	}
+	if created == 0 {
+		t.Skip("filesystem rejects every hostile name")
 	}
 	res, err := scan.Run(context.Background(), scan.Options{Root: root})
 	if err != nil {
@@ -154,7 +160,7 @@ func Test_json_with_hostile_names(t *testing.T) {
 	if err := json.Unmarshal(buf.Bytes(), &out); err != nil {
 		t.Fatalf("invalid json: %v", err)
 	}
-	if len(out.Files) != 3 || strings.Contains(buf.String(), "\x1b") {
+	if len(out.Files) != created || strings.Contains(buf.String(), "\x1b") {
 		t.Errorf("unexpected output")
 	}
 }
