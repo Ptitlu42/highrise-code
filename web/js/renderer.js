@@ -28,7 +28,7 @@ const color_modes = { language: 0, depth: 1, size: 2 };
 const background = [0.035, 0.043, 0.06];
 const light = [0.45, 0.85, 0.35];
 const slab_ratio = 0.002;
-const height_ratio = 0.18;
+const height_ratio = 0.36;
 const height_curve = 0.65;
 
 export function slab_thickness(world, mode) {
