@@ -45,11 +45,19 @@ You see at a glance where the weight of a codebase sits, what is bloated, what i
 ## Quick start
 
 ```sh
-go install github.com/ptitlu42/highrise-code/cmd/highrise-code@latest
-highrise-code ~/src/my-project
+git clone https://github.com/Ptitlu42/highrise-code.git
+cd highrise-code
+make build
+./bin/highrise-code ~/src/my-project
 ```
 
 Your browser opens on the city. Press `Ctrl+C` to stop.
+
+To get `highrise-code` in your `PATH`:
+
+```sh
+sudo make install
+```
 
 ## Three ways to look at your code
 
@@ -175,10 +183,22 @@ make build
 ./bin/highrise-code --help
 ```
 
-Or directly with Go:
+Or directly with Go (no release is tagged yet, so use `GOPROXY=direct` to get the latest commit):
 
 ```sh
-go install github.com/ptitlu42/highrise-code/cmd/highrise-code@latest
+GOPROXY=direct go install github.com/ptitlu42/highrise-code/cmd/highrise-code@main
+```
+
+The binary lands in `$(go env GOPATH)/bin` (usually `~/go/bin`), which must be in your `PATH`:
+
+```sh
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+On fish:
+
+```fish
+fish_add_path (go env GOPATH)/bin
 ```
 
 ### Packages and repositories
