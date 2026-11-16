@@ -53,9 +53,9 @@ void main() {
       value = a_values.z;
       vmax = u_max_values.z;
     }
-    float t = 0.12;
+    float t = 0.1;
     if (u_height_mode != 3) {
-      t = sqrt(clamp(value / max(vmax, 1.0), 0.0, 1.0));
+      t = pow(clamp(value / max(vmax, 1.0), 0.0, 1.0), 0.65);
     }
     height = u_slab * 0.5 + t * u_height_max;
   }

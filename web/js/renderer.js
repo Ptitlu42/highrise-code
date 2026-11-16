@@ -28,7 +28,8 @@ const color_modes = { language: 0, depth: 1, size: 2 };
 const background = [0.035, 0.043, 0.06];
 const light = [0.45, 0.85, 0.35];
 const slab_ratio = 0.002;
-const height_ratio = 0.07;
+const height_ratio = 0.18;
+const height_curve = 0.65;
 
 export function slab_thickness(world, mode) {
   return mode === "2d" ? 0 : world * slab_ratio;
@@ -43,7 +44,7 @@ export function node_top(layout, id, mode, height_by) {
   if (mode === "2d") {
     return base;
   }
-  let t = 0.12;
+  let t = 0.1;
   if (height_by !== "flat") {
     let value = layout.lines[id];
     let vmax = layout.max_lines;
@@ -54,7 +55,7 @@ export function node_top(layout, id, mode, height_by) {
       value = layout.bytes[id];
       vmax = layout.max_bytes;
     }
-    t = Math.sqrt(Math.min(1, Math.max(0, value / Math.max(vmax, 1))));
+    t = Math.pow(Math.min(1, Math.max(0, value / Math.max(vmax, 1))), height_curve);
   }
   return base + slab * 0.5 + t * layout.world * height_ratio;
 }
